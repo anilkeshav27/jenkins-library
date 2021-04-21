@@ -85,7 +85,26 @@ spec:
         default: false
         aliases:
           - name: maven/createBOM
-
+      - name: buildFlags
+        type: "[]string"
+        description: Flags to provide when running mvn.
+        scope:
+          - GENERAL
+          - STEPS
+          - STAGES
+          - PARAMETERS
+        mandatory: false
+      - name: publish
+        type: bool
+        description: Configures maven to run the deploy plugin to publish artifacts to staging repository.
+        scope:
+          - GENERAL
+          - STEPS
+          - STAGES
+          - PARAMETERS
+        default: false
+        aliases:
+          - name: maven/publish
   containers:
     - name: mvn
       image: maven:3.6-jdk-8

@@ -23,6 +23,10 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 		flags = append(flags, "-pl", "!integration-tests")
 	}
 
+	if config.BuildFlags != nil {
+		flags = append(flags, config.BuildFlags...)
+	}
+
 	var defines []string
 	var goals []string
 

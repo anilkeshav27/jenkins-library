@@ -14,14 +14,16 @@ import (
 )
 
 type mavenBuildOptions struct {
-	PomPath                     string `json:"pomPath,omitempty"`
-	Flatten                     bool   `json:"flatten,omitempty"`
-	Verify                      bool   `json:"verify,omitempty"`
-	ProjectSettingsFile         string `json:"projectSettingsFile,omitempty"`
-	GlobalSettingsFile          string `json:"globalSettingsFile,omitempty"`
-	M2Path                      string `json:"m2Path,omitempty"`
-	LogSuccessfulMavenTransfers bool   `json:"logSuccessfulMavenTransfers,omitempty"`
-	CreateBOM                   bool   `json:"createBOM,omitempty"`
+	PomPath                     string   `json:"pomPath,omitempty"`
+	Flatten                     bool     `json:"flatten,omitempty"`
+	Verify                      bool     `json:"verify,omitempty"`
+	ProjectSettingsFile         string   `json:"projectSettingsFile,omitempty"`
+	GlobalSettingsFile          string   `json:"globalSettingsFile,omitempty"`
+	M2Path                      string   `json:"m2Path,omitempty"`
+	LogSuccessfulMavenTransfers bool     `json:"logSuccessfulMavenTransfers,omitempty"`
+	CreateBOM                   bool     `json:"createBOM,omitempty"`
+	BuildFlags                  []string `json:"buildFlags,omitempty"`
+	Publish                     bool     `json:"publish,omitempty"`
 }
 
 // MavenBuildCommand This step will install the maven project into the local maven repository.
@@ -91,6 +93,8 @@ func addMavenBuildFlags(cmd *cobra.Command, stepConfig *mavenBuildOptions) {
 	cmd.Flags().StringVar(&stepConfig.M2Path, "m2Path", os.Getenv("PIPER_m2Path"), "Path to the location of the local repository that should be used.")
 	cmd.Flags().BoolVar(&stepConfig.LogSuccessfulMavenTransfers, "logSuccessfulMavenTransfers", false, "Configures maven to log successful downloads. This is set to `false` by default to reduce the noise in build logs.")
 	cmd.Flags().BoolVar(&stepConfig.CreateBOM, "createBOM", false, "Creates the bill of materials (BOM) using CycloneDX Maven plugin.")
+	cmd.Flags().StringSliceVar(&stepConfig.BuildFlags, "buildFlags", []string{}, "Flags to provide when running mvn.")
+	cmd.Flags().BoolVar(&stepConfig.Publish, "publish", false, "Configures maven to run the deploy plugin to publish artifacts to staging repository.")
 
 }
 
@@ -168,6 +172,22 @@ func mavenBuildMetadata() config.StepData {
 						Type:        "bool",
 						Mandatory:   false,
 						Aliases:     []config.Alias{{Name: "maven/createBOM"}},
+					},
+					{
+						Name:        "buildFlags",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:        "[]string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{},
+					},
+					{
+						Name:        "publish",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:        "bool",
+						Mandatory:   false,
+						Aliases:     []config.Alias{{Name: "maven/publish"}},
 					},
 				},
 			},
