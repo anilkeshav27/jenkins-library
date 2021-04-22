@@ -19,7 +19,6 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 }
 
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
-	log.Entry().Infof("found flags %v", config.Flags)
 	deployFlags := []string{"-Dmaven.install.skip=true"}
 
 	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
@@ -27,6 +26,7 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 	if found {
 		deployFlags = append(deployFlags, config.Flags[position])
 
+		// removing alt deployment repository since that is not needed during install / verify phases
 		config.Flags[position] = config.Flags[len(config.Flags)-1] // Copy last element to index i.
 		config.Flags[len(config.Flags)-1] = ""                     // Erase last element (write zero value).
 		config.Flags = config.Flags[:len(config.Flags)-1]          // Truncate slice.
@@ -94,16 +94,6 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 			mavenOptions.Flags = deployFlags
 			mavenOptions.Goals = []string{"deploy"}
 			mavenOptions.Defines = []string{}
-			/* mavenDeployOption := maven.ExecuteOptions{
-				Flags:                       deployFlags,
-				Goals:                       []string{"deploy"},
-				Defines:                     []string{},
-				PomPath:                     config.PomPath,
-				ProjectSettingsFile:         config.ProjectSettingsFile,
-				GlobalSettingsFile:          config.GlobalSettingsFile,
-				M2Path:                      config.M2Path,
-				LogSuccessfulMavenTransfers: config.LogSuccessfulMavenTransfers,
-			} */
 			_, err := maven.Execute(&mavenOptions, utils)
 			return err
 		} else {
