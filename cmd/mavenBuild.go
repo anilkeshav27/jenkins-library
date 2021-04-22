@@ -90,7 +90,10 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 	if err == nil {
 		if config.Publish && !config.Verify {
 			log.Entry().Infof("publish detected, running mvn deploy")
-			mavenDeployOption := maven.ExecuteOptions{
+			mavenOptions.Flags = deployFlags
+			mavenOptions.Goals = []string{"deploy"}
+			mavenOptions.Defines = []string{}
+			/* mavenDeployOption := maven.ExecuteOptions{
 				Flags:                       deployFlags,
 				Goals:                       []string{"deploy"},
 				Defines:                     []string{},
@@ -99,8 +102,8 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 				GlobalSettingsFile:          config.GlobalSettingsFile,
 				M2Path:                      config.M2Path,
 				LogSuccessfulMavenTransfers: config.LogSuccessfulMavenTransfers,
-			}
-			_, err := maven.Execute(&mavenDeployOption, utils)
+			} */
+			_, err := maven.Execute(&mavenOptions, utils)
 			return err
 		} else {
 			log.Entry().Infof("publish not detected, ignoring maven deploy")
