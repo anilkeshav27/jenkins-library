@@ -134,12 +134,17 @@ func mavenBuildMetadata() config.StepData {
 						Aliases:     []config.Alias{},
 					},
 					{
-						Name:        "projectSettingsFile",
-						ResourceRef: []config.ResourceReference{},
-						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
-						Type:        "string",
-						Mandatory:   false,
-						Aliases:     []config.Alias{{Name: "maven/projectSettingsFile"}},
+						Name: "projectSettingsFile",
+						ResourceRef: []config.ResourceReference{
+							{
+								Name:  "commonPipelineEnvironment",
+								Param: "custom/projectSettingsFile",
+							},
+						},
+						Scope:     []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:      "string",
+						Mandatory: false,
+						Aliases:   []config.Alias{{Name: "maven/projectSettingsFile"}},
 					},
 					{
 						Name:        "globalSettingsFile",
@@ -174,12 +179,17 @@ func mavenBuildMetadata() config.StepData {
 						Aliases:     []config.Alias{{Name: "maven/createBOM"}},
 					},
 					{
-						Name:        "buildFlags",
-						ResourceRef: []config.ResourceReference{},
-						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
-						Type:        "[]string",
-						Mandatory:   false,
-						Aliases:     []config.Alias{},
+						Name: "buildFlags",
+						ResourceRef: []config.ResourceReference{
+							{
+								Name:  "commonPipelineEnvironment",
+								Param: "custom/buildFlags",
+							},
+						},
+						Scope:     []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:      "[]string",
+						Mandatory: false,
+						Aliases:   []config.Alias{},
 					},
 					{
 						Name:        "publish",

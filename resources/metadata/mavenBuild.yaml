@@ -43,6 +43,9 @@ spec:
           - PARAMETERS
         aliases:
           - name: maven/projectSettingsFile
+        resourceRef:
+          - name: commonPipelineEnvironment
+            param: custom/projectSettingsFile
       - name: globalSettingsFile
         type: string
         description: Path to the mvn settings file that should be used as global settings file.
@@ -94,6 +97,9 @@ spec:
           - STAGES
           - PARAMETERS
         mandatory: false
+        resourceRef:
+          - name: commonPipelineEnvironment
+            param: custom/buildFlags
       - name: publish
         type: bool
         description: Configures maven to run the deploy plugin to publish artifacts to staging repository.

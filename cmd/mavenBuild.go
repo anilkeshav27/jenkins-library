@@ -16,6 +16,7 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 }
 
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
+	log.Entry().Infof("found the project settings file at %v", config.ProjectSettingsFile)
 	var flags = []string{"-update-snapshots", "--batch-mode"}
 
 	exists, _ := utils.FileExists("integration-tests/pom.xml")
