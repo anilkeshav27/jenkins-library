@@ -88,9 +88,9 @@ spec:
         default: false
         aliases:
           - name: maven/createBOM
-      - name: buildFlags
+      - name: flags
         type: "[]string"
-        description: Flags to provide when running mvn.
+        description: Flags to provide when running mvn build.
         scope:
           - GENERAL
           - STEPS
@@ -99,7 +99,7 @@ spec:
         mandatory: false
         resourceRef:
           - name: commonPipelineEnvironment
-            param: custom/buildFlags
+            param: custom/flags
       - name: publish
         type: bool
         description: Configures maven to run the deploy plugin to publish artifacts to staging repository.

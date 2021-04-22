@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/SAP/jenkins-library/pkg/log"
 	"github.com/SAP/jenkins-library/pkg/maven"
 	"github.com/SAP/jenkins-library/pkg/telemetry"
 )
 
 func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
+
 	utils := maven.NewUtilsBundle()
 
 	err := runMavenBuild(&config, telemetryData, utils)
@@ -16,7 +19,18 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 }
 
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
-	log.Entry().Infof("found the project settings file at %v", config.ProjectSettingsFile)
+	deployFlags := []string{"-Dmaven.install.skip=true"}
+
+	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
+
+	if found {
+		deployFlags = append(deployFlags, config.Flags[position])
+
+		config.Flags[position] = config.Flags[len(config.Flags)-1] // Copy last element to index i.
+		config.Flags[len(config.Flags)-1] = ""                     // Erase last element (write zero value).
+		config.Flags = config.Flags[:len(config.Flags)-1]          // Truncate slice.
+	}
+
 	var flags = []string{"-update-snapshots", "--batch-mode"}
 
 	exists, _ := utils.FileExists("integration-tests/pom.xml")
@@ -24,8 +38,8 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 		flags = append(flags, "-pl", "!integration-tests")
 	}
 
-	if config.BuildFlags != nil {
-		flags = append(flags, config.BuildFlags...)
+	if config.Flags != nil {
+		flags = append(flags, config.Flags...)
 	}
 
 	var defines []string
@@ -56,8 +70,6 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 
 	if config.Verify {
 		goals = append(goals, "verify")
-	} else if !config.Publish {
-		goals = append(goals, "install")
 	} else {
 		goals = append(goals, "install")
 	}
@@ -74,5 +86,34 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 	}
 
 	_, err := maven.Execute(&mavenOptions, utils)
+	//return err
+	if err != nil {
+		if config.Publish && !config.Verify {
+			log.Entry().Infof("publish detected, running mvn deploy")
+			mavenDeployOption := maven.ExecuteOptions{
+				Flags:                       deployFlags,
+				Goals:                       []string{"deploy"},
+				Defines:                     []string{},
+				PomPath:                     config.PomPath,
+				ProjectSettingsFile:         config.ProjectSettingsFile,
+				GlobalSettingsFile:          config.GlobalSettingsFile,
+				M2Path:                      config.M2Path,
+				LogSuccessfulMavenTransfers: config.LogSuccessfulMavenTransfers,
+			}
+			_, err := maven.Execute(&mavenDeployOption, utils)
+			return err
+		} else {
+			log.Entry().Infof("publish not detected, ignoring maven deploy")
+		}
+	}
+
 	return err
+}
+func Find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if strings.Contains(item, val) {
+			return i, true
+		}
+	}
+	return -1, false
 }
