@@ -58,7 +58,7 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 	} else if !config.Publish {
 		goals = append(goals, "install")
 	} else {
-		goals = append(goals, "deploy")
+		goals = append(goals, "install")
 	}
 
 	mavenOptions := maven.ExecuteOptions{
