@@ -19,6 +19,7 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 }
 
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
+	log.Entry().Infof("found flags %v", config.Flags)
 	deployFlags := []string{"-Dmaven.install.skip=true"}
 
 	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
