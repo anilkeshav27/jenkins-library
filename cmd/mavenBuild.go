@@ -166,7 +166,7 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 				return errors.Wrap(err, "Adding certificate to keystore failed")
 			}
 		}
-		sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit")
+		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStoreFile, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStoreFile).Info("Using local trust store")
 	} else {
 		log.Entry().Debug("Download of TLS certificates skipped")
