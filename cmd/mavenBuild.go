@@ -32,7 +32,7 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils, fileUtils piperutils.FileUtils) error {
 	downloadClient := &piperhttp.Client{}
 
-	deployFlags := []string{"-Dmaven.install.skip=true", "-Dmaven.wagon.http.ssl.insecure=true"}
+	deployFlags := []string{"-Dmaven.install.skip=true"}
 
 	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
 
@@ -139,26 +139,15 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 	if exists, _ := fileUtils.FileExists(trustStore); exists {
 		// use local existing trust store
 		/* sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit") */
-		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
-		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
-	} else {
-		// import CA certs in keystore does not work with an empty jks file so we initialise with a random key pair( TODO : delete the random key pair from the keystore which should be fine)
-		/* dummyKeyPairOptions := []string{
-			"-genkeypair",
-			"-alias boguscert",
-			"-storepass", "changeit",
-			"-keypass", "secretPassword",
-			"-keystore", trustStore,
-			"-dname", "CN=Developer,OU=Department,O=Company,L=City,ST=State,C=CA",
+		//*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
+		maven_opts := "-Djavax.net.ssl.trustStore=" + trustStore + " -Djavax.net.ssl.trustStorePassword=changeit"
+		err := os.Setenv("MAVEN_OPTS", maven_opts)
+		if err != nil {
+			return errors.Wrap(err, "Could not create MAVEN_OPTS environment variable ")
 		}
-
-		if err := runner.RunExecutable("keytool", dummyKeyPairOptions...); err != nil {
-			return errors.Wrap(err, "Adding random key pair failed to keystore failed")
-		} */
-
+		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	}
-	//TODO: certificate loading is deactivated due to the missing JAVA keytool
-	// see https://github.com/SAP/jenkins-library/issues/1072
+
 	if len(certificateList) > 0 {
 		// use local created trust store with downloaded certificates
 		keytoolOptions := []string{
@@ -186,7 +175,12 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 				return errors.Wrap(err, "Adding certificate to keystore failed")
 			}
 		}
-		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
+		/* *flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit") */
+		maven_opts := "-Djavax.net.ssl.trustStore=" + trustStore + " -Djavax.net.ssl.trustStorePassword=changeit"
+		err := os.Setenv("MAVEN_OPTS", maven_opts)
+		if err != nil {
+			return errors.Wrap(err, "Could not create MAVEN_OPTS environment variable ")
+		}
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
 		log.Entry().Debug("Download of TLS certificates skipped")
