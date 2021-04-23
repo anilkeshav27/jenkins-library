@@ -138,7 +138,12 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		/* sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit") */
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
-	} else
+	} else {
+		err := os.MkdirAll(trustStore, 0777)
+		if err != nil {
+			return err
+		}
+	}
 	//TODO: certificate loading is deactivated due to the missing JAVA keytool
 	// see https://github.com/SAP/jenkins-library/issues/1072
 	if len(certificateList) > 0 {
