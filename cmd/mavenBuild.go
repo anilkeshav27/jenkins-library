@@ -142,6 +142,10 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
+		err := fileUtils.MkdirAll(filepath.Join(getWorkingDirForTrustStore(), ".certificates"), 0777)
+		if err != nil {
+			return errors.Wrap(err, "could not create a keystore directoy")
+		}
 		if err := runner.RunExecutable("touch " + trustStore); err != nil {
 			return errors.Wrap(err, "could not create a keystore file")
 		}
