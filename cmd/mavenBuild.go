@@ -146,7 +146,10 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		if err != nil {
 			return errors.Wrap(err, "could not create a keystore directoy")
 		} */
-		if err := runner.RunExecutable("touch " + trustStore); err != nil {
+		createKeyStoreOptions := []string{
+			trustStore,
+		}
+		if err := runner.RunExecutable("touch", createKeyStoreOptions...); err != nil {
 			return errors.Wrap(err, "could not create a keystore file")
 		}
 	}
