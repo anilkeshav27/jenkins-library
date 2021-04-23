@@ -109,7 +109,6 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 				log.SetErrorCategory(log.ErrorInfrastructure)
 				return err
 			}
-			/* loadRemoteRepoCertificates() */
 			mavenOptions.Flags = deployFlags
 			mavenOptions.Goals = []string{"deploy"}
 			mavenOptions.Defines = []string{}
@@ -137,10 +136,6 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 	log.Entry().Infof("using trust store %s", trustStore)
 
 	if exists, _ := fileUtils.FileExists(trustStore); exists {
-		// use local existing trust store
-		/* sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit") */
-		//*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
-
 		maven_opts := "-Djavax.net.ssl.trustStore=" + trustStore + " -Djavax.net.ssl.trustStorePassword=changeit"
 		err := os.Setenv("MAVEN_OPTS", maven_opts)
 		if err != nil {
@@ -150,7 +145,6 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 	}
 
 	if len(certificateList) > 0 {
-		// use local created trust store with downloaded certificates
 		keytoolOptions := []string{
 			"-import",
 			"-noprompt",
@@ -176,7 +170,7 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 				return errors.Wrap(err, "Adding certificate to keystore failed")
 			}
 		}
-		/* *flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit") */
+
 		maven_opts := "-Djavax.net.ssl.trustStore=.pipeline/keystore.jks -Djavax.net.ssl.trustStorePassword=changeit"
 		err := os.Setenv("MAVEN_OPTS", maven_opts)
 		if err != nil {
