@@ -19,7 +19,7 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 }
 
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
-	deployFlags := []string{"-Dmaven.install.skip=true"}
+	deployFlags := []string{"-Dmaven.install.skip=true", "-Dmaven.wagon.http.ssl.insecure=true"}
 
 	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
 
