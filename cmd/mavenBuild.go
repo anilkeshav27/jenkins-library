@@ -133,7 +133,7 @@ func Find(slice []string, val string) (int, bool) {
 }
 
 func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner, fileUtils piperutils.FileUtils) error {
-	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".certificates", "cacerts")
+	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".certificates", "keystore.jks")
 	log.Entry().Infof("using trust store %s", trustStore)
 
 	if exists, _ := fileUtils.FileExists(trustStore); exists {
@@ -142,9 +142,8 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
-		err := fileUtils.FileWrite(trustStore, []byte(""), 0777)
-		if err != nil {
-			return errors.Wrapf(err, "failed to update create trust store'%v'", trustStore)
+		if err := runner.RunExecutable("touch " + trustStore); err != nil {
+			return errors.Wrap(err, "could not create a keystore file")
 		}
 	}
 	//TODO: certificate loading is deactivated due to the missing JAVA keytool
