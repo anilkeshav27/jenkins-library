@@ -129,7 +129,7 @@ func Find(slice []string, val string) (int, bool) {
 }
 
 func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner) error {
-	trustStoreFile := filepath.Join(getWorkingDir(), "/maven/ssl/certs/", "ca-certificates.crt")
+	trustStoreFile := filepath.Join(getWorkingDir(), ".certificates", "cacerts")
 
 	if exists, _ := fileUtilsExists(trustStoreFile); exists {
 		// use local existing trust store
