@@ -133,7 +133,7 @@ func Find(slice []string, val string) (int, bool) {
 }
 
 func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner, fileUtils piperutils.FileUtils) error {
-	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".certificates", "keystore.jks")
+	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".pipeline", "keystore.jks")
 	log.Entry().Infof("using trust store %s", trustStore)
 
 	if exists, _ := fileUtils.FileExists(trustStore); exists {
@@ -142,10 +142,10 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
-		err := fileUtils.MkdirAll(filepath.Join(getWorkingDirForTrustStore(), ".certificates"), 0777)
+		/* err := fileUtils.MkdirAll(filepath.Join(getWorkingDirForTrustStore(), ".certificates"), 0777)
 		if err != nil {
 			return errors.Wrap(err, "could not create a keystore directoy")
-		}
+		} */
 		if err := runner.RunExecutable("touch " + trustStore); err != nil {
 			return errors.Wrap(err, "could not create a keystore file")
 		}
