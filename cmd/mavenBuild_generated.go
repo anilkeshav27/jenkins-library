@@ -24,6 +24,7 @@ type mavenBuildOptions struct {
 	CreateBOM                   bool     `json:"createBOM,omitempty"`
 	Flags                       []string `json:"flags,omitempty"`
 	Publish                     bool     `json:"publish,omitempty"`
+	CustomTLSCertificateLinks   []string `json:"customTlsCertificateLinks,omitempty"`
 }
 
 // MavenBuildCommand This step will install the maven project into the local maven repository.
@@ -95,6 +96,7 @@ func addMavenBuildFlags(cmd *cobra.Command, stepConfig *mavenBuildOptions) {
 	cmd.Flags().BoolVar(&stepConfig.CreateBOM, "createBOM", false, "Creates the bill of materials (BOM) using CycloneDX Maven plugin.")
 	cmd.Flags().StringSliceVar(&stepConfig.Flags, "flags", []string{}, "Flags to provide when running mvn build.")
 	cmd.Flags().BoolVar(&stepConfig.Publish, "publish", false, "Configures maven to run the deploy plugin to publish artifacts to staging repository.")
+	cmd.Flags().StringSliceVar(&stepConfig.CustomTLSCertificateLinks, "customTlsCertificateLinks", []string{}, "List of download links to custom TLS certificates. This is required to ensure trusted connections to instances with repositories (like nexus) when publish flag is set to true.")
 
 }
 
@@ -198,6 +200,14 @@ func mavenBuildMetadata() config.StepData {
 						Type:        "bool",
 						Mandatory:   false,
 						Aliases:     []config.Alias{{Name: "maven/publish"}},
+					},
+					{
+						Name:        "customTlsCertificateLinks",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"PARAMETERS", "STAGES", "STEPS"},
+						Type:        "[]string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{},
 					},
 				},
 			},
