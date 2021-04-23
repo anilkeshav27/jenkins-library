@@ -14,19 +14,22 @@ import (
 	"github.com/pkg/errors"
 
 	piperhttp "github.com/SAP/jenkins-library/pkg/http"
+	"github.com/SAP/jenkins-library/pkg/piperutils"
 )
 
 func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 
 	utils := maven.NewUtilsBundle()
 
-	err := runMavenBuild(&config, telemetryData, utils)
+	fileUtils := &piperutils.Files{}
+
+	err := runMavenBuild(&config, telemetryData, utils, fileUtils)
 	if err != nil {
 		log.Entry().WithError(err).Fatal("step execution failed")
 	}
 }
 
-func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils) error {
+func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils, fileUtils piperutils.FileUtils) error {
 	downloadClient := &piperhttp.Client{}
 
 	deployFlags := []string{"-Dmaven.install.skip=true", "-Dmaven.wagon.http.ssl.insecure=true"}
@@ -102,7 +105,7 @@ func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomDat
 		if config.Publish && !config.Verify {
 			log.Entry().Infof("publish detected, running mvn deploy")
 			runner := &command.Command{}
-			if err := loadRemoteRepoCertificates(config.CustomTLSCertificateLinks, downloadClient, &deployFlags, runner); err != nil {
+			if err := loadRemoteRepoCertificates(config.CustomTLSCertificateLinks, downloadClient, &deployFlags, runner, fileUtils); err != nil {
 				log.SetErrorCategory(log.ErrorInfrastructure)
 				return err
 			}
@@ -129,19 +132,19 @@ func Find(slice []string, val string) (int, bool) {
 	return -1, false
 }
 
-func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner) error {
+func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner, fileUtils piperutils.FileUtils) error {
 	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".certificates", "cacerts")
 	log.Entry().Infof("using trust store %s", trustStore)
 
-	if exists, _ := fileUtilsExists(trustStore); exists {
+	if exists, _ := fileUtils.FileExists(trustStore); exists {
 		// use local existing trust store
 		/* sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit") */
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
-		err := os.MkdirAll(trustStore, 0777)
+		err := fileUtils.FileWrite(trustStore, []byte(""), 0777)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "failed to update create trust store'%v'", trustStore)
 		}
 	}
 	//TODO: certificate loading is deactivated due to the missing JAVA keytool
