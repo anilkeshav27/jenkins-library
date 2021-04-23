@@ -7,12 +7,16 @@ import (
 )
 
 func TestMavenBuild(t *testing.T) {
+	fileUtils := &kanikoFileMock{
+		fileReadContent:  map[string]string{"path/to/docker/config.json": `{"auths":{"custom":"test"}}`},
+		fileWriteContent: map[string]string{},
+	}
 	t.Run("mavenBuild should install the artifact", func(t *testing.T) {
 		mockedUtils := newMavenMockUtils()
 
 		config := mavenBuildOptions{}
 
-		err := runMavenBuild(&config, nil, &mockedUtils)
+		err := runMavenBuild(&config, nil, &mockedUtils, fileUtils)
 
 		assert.Nil(t, err)
 		assert.Equal(t, mockedUtils.Calls[0].Exec, "mvn")
@@ -25,7 +29,7 @@ func TestMavenBuild(t *testing.T) {
 
 		config := mavenBuildOptions{}
 
-		err := runMavenBuild(&config, nil, &mockedUtils)
+		err := runMavenBuild(&config, nil, &mockedUtils, fileUtils)
 
 		assert.Nil(t, err)
 		assert.Equal(t, mockedUtils.Calls[0].Exec, "mvn")
@@ -37,7 +41,7 @@ func TestMavenBuild(t *testing.T) {
 
 		config := mavenBuildOptions{Flatten: true}
 
-		err := runMavenBuild(&config, nil, &mockedUtils)
+		err := runMavenBuild(&config, nil, &mockedUtils, fileUtils)
 
 		assert.Nil(t, err)
 		assert.Contains(t, mockedUtils.Calls[0].Params, "flatten:flatten")
@@ -50,7 +54,7 @@ func TestMavenBuild(t *testing.T) {
 
 		config := mavenBuildOptions{Verify: true}
 
-		err := runMavenBuild(&config, nil, &mockedUtils)
+		err := runMavenBuild(&config, nil, &mockedUtils, fileUtils)
 
 		assert.Nil(t, err)
 		assert.Contains(t, mockedUtils.Calls[0].Params, "verify")
@@ -62,7 +66,7 @@ func TestMavenBuild(t *testing.T) {
 
 		config := mavenBuildOptions{CreateBOM: true}
 
-		err := runMavenBuild(&config, nil, &mockedUtils)
+		err := runMavenBuild(&config, nil, &mockedUtils, fileUtils)
 
 		assert.Nil(t, err)
 		assert.Contains(t, mockedUtils.Calls[0].Params, "org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom")
