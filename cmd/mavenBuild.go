@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -129,13 +130,13 @@ func Find(slice []string, val string) (int, bool) {
 }
 
 func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downloader, flags *[]string, runner command.ExecRunner) error {
-	trustStoreFile := filepath.Join(getWorkingDir(), ".certificates", "cacerts")
+	trustStore := filepath.Join(getWorkingDirForTrustStore(), ".certificates", "cacerts")
 
-	if exists, _ := fileUtilsExists(trustStoreFile); exists {
+	if exists, _ := fileUtilsExists(trustStore); exists {
 		// use local existing trust store
 		/* sonar.addEnvironment("SONAR_SCANNER_OPTS=-Djavax.net.ssl.trustStore=" + trustStoreFile + " -Djavax.net.ssl.trustStorePassword=changeit") */
-		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStoreFile, " -Djavax.net.ssl.trustStorePassword=changeit")
-		log.Entry().WithField("trust store", trustStoreFile).Info("Using local trust store")
+		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
+		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else
 	//TODO: certificate loading is deactivated due to the missing JAVA keytool
 	// see https://github.com/SAP/jenkins-library/issues/1072
@@ -145,9 +146,9 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 			"-import",
 			"-noprompt",
 			"-storepass", "changeit",
-			"-keystore", trustStoreFile,
+			"-keystore", trustStore,
 		}
-		tmpFolder := getTempDir()
+		tmpFolder := getTempDirForCertFile()
 		defer os.RemoveAll(tmpFolder) // clean up
 
 		for _, certificate := range certificateList {
@@ -166,10 +167,26 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 				return errors.Wrap(err, "Adding certificate to keystore failed")
 			}
 		}
-		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStoreFile, " -Djavax.net.ssl.trustStorePassword=changeit")
-		log.Entry().WithField("trust store", trustStoreFile).Info("Using local trust store")
+		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
+		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
 		log.Entry().Debug("Download of TLS certificates skipped")
 	}
 	return nil
+}
+
+func getWorkingDirForTrustStore() string {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		log.Entry().WithError(err).WithField("path", workingDir).Debug("Retrieving of work directory failed")
+	}
+	return workingDir
+}
+
+func getTempDirForCertFile() string {
+	tmpFolder, err := ioutil.TempDir(".", "temp-")
+	if err != nil {
+		log.Entry().WithError(err).WithField("path", tmpFolder).Debug("Creating temp directory failed")
+	}
+	return tmpFolder
 }
