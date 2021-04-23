@@ -142,26 +142,19 @@ func loadRemoteRepoCertificates(certificateList []string, client piperhttp.Downl
 		*flags = append(*flags, "-Djavax.net.ssl.trustStore="+trustStore, " -Djavax.net.ssl.trustStorePassword=changeit")
 		log.Entry().WithField("trust store", trustStore).Info("Using local trust store")
 	} else {
-		createKeyStoreOptions := []string{
-			trustStore,
-		}
-		if err := runner.RunExecutable("touch", createKeyStoreOptions...); err != nil {
-			return errors.Wrap(err, "could not create a keystore file")
-		}
-
 		// import CA certs in keystore does not work with an empty jks file so we initialise with a random key pair( TODO : delete the random key pair from the keystore which should be fine)
-		dummyKeyPairOptions := []string{
+		/* dummyKeyPairOptions := []string{
 			"-genkeypair",
 			"-alias boguscert",
 			"-storepass", "changeit",
 			"-keypass", "secretPassword",
 			"-keystore", trustStore,
-			"-dname", "CN=Developer, OU=Department, O=Company, L=City, ST=State, C=CA",
+			"-dname", "CN=Developer,OU=Department,O=Company,L=City,ST=State,C=CA",
 		}
 
 		if err := runner.RunExecutable("keytool", dummyKeyPairOptions...); err != nil {
 			return errors.Wrap(err, "Adding random key pair failed to keystore failed")
-		}
+		} */
 
 	}
 	//TODO: certificate loading is deactivated due to the missing JAVA keytool
