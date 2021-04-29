@@ -99,7 +99,7 @@ spec:
         mandatory: false
         resourceRef:
           - name: commonPipelineEnvironment
-            param: custom/flags
+            param: custom/mavenFlags
       - name: publish
         type: bool
         description: Configures maven to run the deploy plugin to publish artifacts to staging repository.

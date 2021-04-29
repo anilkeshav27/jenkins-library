@@ -185,7 +185,7 @@ func mavenBuildMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{
 							{
 								Name:  "commonPipelineEnvironment",
-								Param: "custom/flags",
+								Param: "custom/mavenFlags",
 							},
 						},
 						Scope:     []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
