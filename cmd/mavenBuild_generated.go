@@ -140,7 +140,7 @@ func mavenBuildMetadata() config.StepData {
 						ResourceRef: []config.ResourceReference{
 							{
 								Name:  "commonPipelineEnvironment",
-								Param: "custom/projectSettingsFile",
+								Param: "custom/mavenProjectSettingsFile",
 							},
 						},
 						Scope:     []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
@@ -154,7 +154,7 @@ func mavenBuildMetadata() config.StepData {
 						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
 						Type:        "string",
 						Mandatory:   false,
-						Aliases:     []config.Alias{{Name: "maven/globalSettingsFile"}},
+						Aliases:     []config.Alias{{Name: "maven/mavenGlobalSettingsFile"}},
 					},
 					{
 						Name:        "m2Path",
