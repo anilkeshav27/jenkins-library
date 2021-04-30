@@ -32,7 +32,7 @@ func mavenBuild(config mavenBuildOptions, telemetryData *telemetry.CustomData) {
 func runMavenBuild(config *mavenBuildOptions, telemetryData *telemetry.CustomData, utils maven.Utils, fileUtils piperutils.FileUtils) error {
 	downloadClient := &piperhttp.Client{}
 
-	deployFlags := []string{"-Dmaven.test.skip=true", "-Dmaven.install.skip=true"}
+	deployFlags := []string{"-Dmaven.main.skip=true", "-Dmaven.test.skip=true", "-Dmaven.install.skip=true"}
 
 	position, found := Find(config.Flags, "DaltDeploymentRepository=internal")
 
